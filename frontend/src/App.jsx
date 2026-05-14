@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Papa from "papaparse";
 import DownloadButton from "./components/DownloadButton.jsx";
 import PreviewTable from "./components/PreviewTable.jsx";
 import ProgressIndicator from "./components/ProgressIndicator.jsx";
@@ -28,50 +29,19 @@ export default function App() {
   }, [darkMode]);
 
   function handleUpload(uploadedFile) {
-    setFile(uploadedFile);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const text = e.target.result;
-      const lines = text.split(/\r?\n/).filter((l) => l.trim() !== "");
-      if (lines.length < 2) return;
-
-      const parseRow = (line) => {
-        const result = [];
-        let current = "";
-        let inQuotes = false;
-        for (let i = 0; i < line.length; i++) {
-          const ch = line[i];
-          if (ch === '"') {
-            inQuotes = !inQuotes;
-          } else if (ch === "," && !inQuotes) {
-            result.push(current.trim());
-            current = "";
-          } else {
-            current += ch;
-          }
-        }
-        result.push(current.trim());
-        return result;
-      };
-
-      const hdrs = parseRow(lines[0]);
-      const dataLines = lines.slice(1);
-      const total = dataLines.length;
-      const previewRows = dataLines.slice(0, 5).map((line) => {
-        const vals = parseRow(line);
-        const obj = {};
-        hdrs.forEach((h, i) => {
-          obj[h] = vals[i] ?? "";
-        });
-        return obj;
-      });
-
-      setHeaders(hdrs);
-      setPreview(previewRows);
-      setTotalRows(total);
-      setPhase("preview");
-    };
-    reader.readAsText(uploadedFile);
+    Papa.parse(uploadedFile, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (results) => {
+        const allRows = results.data;
+        const hdrs = results.meta.fields;
+        setHeaders(hdrs);
+        setPreview(allRows.slice(0, 5));
+        setTotalRows(allRows.length);
+        setFile(uploadedFile);
+        setPhase("preview");
+      },
+    });
   }
 
   async function handlePersonalise() {

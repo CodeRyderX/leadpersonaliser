@@ -2,6 +2,7 @@ import os
 
 import anthropic
 import anyio
+import httpx
 
 from utils.rate_limiter import exponential_backoff
 
@@ -17,7 +18,10 @@ _client = None
 def _get_client() -> anthropic.Anthropic:
     global _client
     if _client is None:
-        _client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+        _client = anthropic.Anthropic(
+            api_key=os.environ.get("ANTHROPIC_API_KEY"),
+            http_client=httpx.Client(),
+        )
     return _client
 
 
@@ -30,7 +34,7 @@ def build_user_prompt(row: dict) -> str:
 def _sync_call(row: dict) -> str:
     client = _get_client()
     response = client.messages.create(
-        model="claude-sonnet-4-20250514",
+        model="claude-sonnet-4-5",
         max_tokens=150,
         system=SYSTEM_PROMPT,
         messages=[{"role": "user", "content": build_user_prompt(row)}],
