@@ -9,7 +9,9 @@ from utils.rate_limiter import exponential_backoff
 SYSTEM_PROMPT = (
     "You are an expert cold email copywriter. Write a single personalised opening line for a cold email. "
     "It must sound human, specific, and natural — never generic. No more than 2 sentences. "
-    "Do not start with 'I' or 'Hope this finds you well'. Return only the opening line, nothing else."
+    "Always start with a greeting using the recipient's first name — either 'Hi', 'Hey', or 'Hello' followed "
+    "by their first name and a comma (e.g. 'Hey Nick,' or 'Hi Sarah,') — then continue with the personalised line. "
+    "Do not use 'Hope this finds you well' or any generic filler. Return only the opening line, nothing else."
 )
 
 _client = None
